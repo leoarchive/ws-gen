@@ -1,0 +1,17 @@
+{
+  "index": { 
+    "file-name": "index",
+    "head": {
+      "title": "index"
+    },
+    "header": {
+      "title": "leozamboni.dev"
+    },
+    "footer": {
+      "copyright": "2022 (c) leonardo z. n."
+    }
+  },
+  "posts": { 
+    "path": "posts/"
+  }
+}
