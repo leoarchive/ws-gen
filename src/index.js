@@ -5,6 +5,7 @@ import { postsPage } from "./app/pages/posts/index.js";
 import { projectPage } from "./app/pages/projects/index.js";
 import { renderPosts } from "./app/posts/index.js";
 import { renderTemplate } from "./app/template/index.js";
+import { writeFile } from "./utils/filesystem.js";
 
 const wsgen = () => {
   let page;
@@ -48,5 +49,6 @@ const wsgen = () => {
     renderAssets();
   }
 
+  writeFile("./README", `page generated ${new Date().toLocaleDateString("pt-BR")} using https://github.com/leozamboni/ws-gen`)
 }
 wsgen();
