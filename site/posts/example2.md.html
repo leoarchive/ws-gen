@@ -1,0 +1,392 @@
+
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="./src/template/css/posts.css">
+  </head>
+  <hr />
+<p>layout: post
+title: "RESTful API com NestJS, Docker Compose, Postgres, TypeORM e Swagger"
+date: 2022-04-08 10:39:20 -0300</p>
+<h2 id="categoriestutorialsapijavascripttypescript">categories: tutorials api javascript typescript</h2>
+<p>Esse post é um tutorial onde vou mostrar como construir uma <a href="https://en.wikipedia.org/wiki/Representational_state_transfer">RESTful API</a>. Não vou abordar assuntos teóricos - <em>e nem assuntos básicos como: como usar o terminal, vscode, JavaScript, TypeScript, ..</em> - mas eles têm alguma importância caso você nunca tenha visto nada parecido antes. Se esse for o caso, uma leitura nos artigos da wikipedia - <em>ou suas respectivas documentações</em> - sobre o assunto será suficiente.</p>
+<p>Tecs:</p>
+<ul>
+<li><a href="#nestjs">NestJS</a>;</li>
+<li><a href="#docker">Docker</a>;</li>
+<li><a href="#docker-compose">Docker Compose</a>;</li>
+<li><a href="#postgres">Postgres</a>;</li>
+<li><a href="#typeorm">TypeORM</a>;</li>
+<li><a href="#pgadmin">pgAdmin</a>;</li>
+<li><a href="#crud">CRUD</a>;</li>
+<li><a href="#swagger">Swagger</a>.</li>
+</ul>
+<h1 id="nestjs">NestJS</h1>
+<p>Antes de tudo, eu vou usar o yarn mas você pode usar o npm ou qualquer outro package manager basta trocar yarn pelo mesmo. Precisamos instalar o <a href="https://docs.docker.com/engine/install/ubuntu/">docker</a> e o <a href="https://docs.docker.com/compose/install/">docker compose</a> também.</p>
+<p>Depois vamos instalar o NestJS:</p>
+<pre><code>yarn global add @nestjs/cli
+</code></pre>
+<p>e criaremos nosso projeto com o yarn:</p>
+<pre><code>nest new nest_api
+</code></pre>
+<h1 id="docker">Docker</h1>
+<p>Agora chegou a hora de configurarmos nossos containers. Primeiro crie um arquivo <strong>Dockerfile</strong>. Ele é responsável pela nossa imagem principal.</p>
+<pre><code>nest_api/
+├── node_modules/
+├── src/
+├── test/
+├── .eslintrc.js
+├── .gitignore
+├── .prettierrc
+├── Dockerfile &lt;---
+├── nest-cli.json
+├── package.json
+├── README.md
+├── tsconfig.build.json
+├── tsconfig.json
+└── yarn.lock
+</code></pre>
+<p>Dentro dele:
+{% highlight dockerfile %}</p>
+<h1 id="dockerfile">Dockerfile:</h1>
+<h1 id="essearquivoestdizendoparaodockerqueusaremosumaimagembaseparaacriaodonossocontainer">Esse arquivo está dizendo para o docker que usaremos uma imagem base para a criação do nosso container;</h1>
+<p>FROM node:17</p>
+<h1 id="queodiretriodomesmoserhomeapi">Que o diretório do mesmo será /home/api;</h1>
+<p>WORKDIR /home/api</p>
+<h1 id="ondecopiamososarquivospackagejsoneyarnlockparadentrododiretrio">Onde copiamos os arquivos package.json e yarn.lock para dentro do diretório;</h1>
+<p>COPY package.json .
+COPY yarn.lock .</p>
+<h1 id="logoemseguidainstalaremosasdependncias">Logo em seguida instalaremos as dependências;</h1>
+<p>RUN yarn install</p>
+<h1 id="copiamosorestodosarquivosparadentrodele">Copiamos o resto dos arquivos para dentro dele;</h1>
+<p>COPY . .</p>
+<h1 id="eparafinalizariniciaremosaaplicao">E para finalizar iniciaremos a aplicação.</h1>
+<p>CMD yarn start:dev
+{% endhighlight %}
+Agora você pode rodar o comando para ver se tudo está funcionando:</p>
+<pre><code>docker build -t nest_api .
+</code></pre>
+<p>Se a saída no final for <em>Successfully built</em> e <em>Successfully tagged</em> podemos seguir para o próximo passo.</p>
+<h1 id="dockercompose">Docker Compose</h1>
+<p>Crie um arquivo chamado <strong>docker-compose.dev.yml</strong>.
+Perceba que até agora nós apenas estamos configurando nosso ambiente de desenvolvimento. Para outros ambientes a configuração não será a mesma.</p>
+<pre><code>nest_api/
+├── node_modules/
+├── src/
+├── test/
+├── .eslintrc.js
+├── .gitignore
+├── .prettierrc
+├── docker-compose.dev.yml &lt;---
+├── Dockerfile
+├── nest-cli.json
+├── package.json
+├── README.md
+├── tsconfig.build.json
+├── tsconfig.json
+└── yarn.lock
+</code></pre>
+<p>Dentro dele:
+{% highlight yml %}</p>
+<h1 id="dockercomposedevyml">docker-compose.dev.yml:</h1>
+<h1 id="basicamenteaquiestamoscriando3containersparanossaaplicao">Basicamente aqui estamos criando 3 containers para nossa aplicação:</h1>
+<h1 id="oprimeiroparaaapi">O primeiro para a api;</h1>
+<h1 id="outroparaopostgres">Outro para o postgres;</h1>
+<h1 id="eoltimoparaopgadminquenosajudaragerenciarobancodedados">E o último para o pgadmin. Que nos ajudará a gerenciar o banco de dados.</h1>
+<p>version: "3.8"
+services:
+  api:
+      container<em>name: nest-tutorial-api
+      build: .
+      # Como em nosso container as portas são diferentes, mapeamos elas:
+      ports:
+          - "3000:3000"
+      volumes:
+          - .:/home/api
+          - /home/api/node</em>modules
+      networks:
+          - nest<em>api</em>tutorial</p>
+<p>pgadmin:
+      container<em>name: nest-tutorial-pgadmin
+      # Imagem base para o container do pgAdmin:
+      image: dpage/pgadmin4
+      restart: unless-stopped
+      # Acesso ao pgAdmin:
+      environment:
+          PGADMIN</em>DEFAULT<em>EMAIL: 'admin@admin.com.br'
+          PGADMIN</em>DEFAULT<em>PASSWORD: root
+      ports:
+          - 16543:80
+      depends</em>on:
+          - postgres
+      networks:
+          - nest<em>api</em>tutorial</p>
+<p>postgres:
+      container<em>name: nest-tutorial-postgres
+      # Imagem base para o container do Postgres:
+      image: postgres:latest
+      ports:
+          - "3500:5432"
+      # Acesso ao banco de dados:
+      environment:
+          POSTGRES</em>USER: user
+          POSTGRES<em>PASSWORD: root
+          POSTGRES</em>DB: db
+      networks:
+          - nest<em>api</em>tutorial</p>
+<h1 id="definimosqueoscontainerscompartilharodeumumamesmaredeinterna">Definimos que os containers compartilharão de um uma mesma rede interna.</h1>
+<p>networks:
+  nest<em>api</em>tutorial:
+{% endhighlight %}
+Agora para criarmos nossos containers:</p>
+<pre><code>docker-compose -f docker-compose.dev.yml up
+</code></pre>
+<p>Se tudo der certo após alguns segundos já será possível visualizar nossos containers rodando na extensão do docker para vscode ou com o comando:</p>
+<pre><code>docker ps
+</code></pre>
+<h1 id="postgres">Postgres</h1>
+<pre><code>yarn add pg
+</code></pre>
+<p>Para configurarmos nossa API com o Postgres primeiro criaremos um arquivo chamado <strong>dev.env</strong>.</p>
+<pre><code>nest_api/
+├── node_modules/
+├── src/
+├── test/
+├── .eslintrc.js
+├── .gitignore
+├── .prettierrc
+├── dev.env &lt;---
+├── docker-compose.dev.yml
+├── Dockerfile
+├── nest-cli.json
+├── package.json
+├── README.md
+├── tsconfig.build.json
+├── tsconfig.json
+└── yarn.lock
+</code></pre>
+<p>Com as variáveis:</p>
+<pre><code># dev.env:
+# DATABASE
+
+POSTGRES_HOST=postgres
+POSTGRES_USERNAME=user
+POSTGRES_PASSWORD=root
+POSTGRES_DATABASE=db
+</code></pre>
+<p>Esse arquivo deve seguir com as informações contidas no nosso container. Onde <em>POSTGRES</em>HOST_ é o nome da imagem.</p>
+<h1 id="typeorm">TypeORM</h1>
+<p>Para fazer a conexão com o banco primeiro adicione o TypeORM. Também vamos precisar do dotenv no nosso projeto:</p>
+<pre><code>yarn add @nestjs/typeorm typeorm dotenv
+</code></pre>
+<p>Agora crie uma pasta dentro do diretório <em>src</em> chamada <strong>config</strong> e dentro dela o arquivo <strong>orm.config.ts</strong>.</p>
+<pre><code>nest_api/
+├── node_modules/
+├── src/
+  ├── config/
+      └── orm.config.ts &lt;---
+  ├── app.controller.spec.ts
+  ├── app.controller.ts
+  ├── app.module.ts
+  ├── app.service.ts
+  └── main.ts
+├── test/
+├── .eslintrc.js
+├── .gitignore
+├── .prettierrc
+├── dev.env
+├── docker-compose.dev.yml
+├── Dockerfile
+├── nest-cli.json
+├── package.json
+├── README.md
+├── tsconfig.build.json
+├── tsconfig.json
+└── yarn.lock
+</code></pre>
+<p>{% highlight typescript %}
+// orm.config.ts:
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';</p>
+<p>// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('dotenv').config({
+  path: __dirname + '/./../../dev.env',
+});</p>
+<p>export const ormConfig: TypeOrmModuleOptions = {
+  type: 'postgres',
+  host: process.env.POSTGRES<em>HOST,
+  port: 5432,
+  username: process.env.POSTGRES</em>USERNAME,
+  password: process.env.POSTGRES<em>PASSWORD,
+  database: process.env.POSTGRES</em>DATABASE,
+  entities: [],
+  synchronize: true,
+};
+{% endhighlight %}
+Aqui estamos conectando nossa aplicação com as variáveis de desenvolvimento contidas no arquivo <em>dev.env</em>.
+Mas ainda não passamos essas informações para nossa API. Para isso no arquivo <strong>app.modules.ts</strong> importe nossa variável no array <em>imports</em> do nosso module:
+{% highlight typescript %}
+@Module({
+  imports: [TypeOrmModule.forRoot(ormConfig)],
+  controllers: [AppController],
+  providers: [AppService],
+})
+{% endhighlight %}
+Agora para saber se tudo está funcionando corretamente vamos rodar o comando:</p>
+<pre><code>docker-compose -f docker-compose.dev.yml up --build
+</code></pre>
+<p>Se tudo estiver certo devemos receber <em>Nest application successfully started</em> no log do container da API.</p>
+<h1 id="pgadmin">pgAdmin</h1>
+<p>Com os containers rodando podemos acessar o banco pelo pgAdmin. Vamos entrar no endereço <em>http://localhost:16543/</em> e conectar com as informações que passamos no arquivo do docker compose:</p>
+<blockquote>
+  <p>email: admin@admin.com.br</p>
+  <p>senha: root</p>
+</blockquote>
+<p>Vamos criar um server com nome "Tutorial" e na aba <em>connection</em> vamos colocar as variáveis que conectamos nossa API:</p>
+<blockquote>
+  <p>Host: postgres</p>
+  <p>Username: user</p>
+  <p>Password: root</p>
+</blockquote>
+<p>Com isso já podemos administrar nosso banco pelo pgAdmin.</p>
+<h1 id="crud">CRUD</h1>
+<p>Vamos aproveitar a implementação do CRUD para já documentarmos nossa API com o Swagger:</p>
+<pre><code>yarn add @nestjs/swagger
+</code></pre>
+<p>Para criarmos um CRUD simples na nossa API - <em>sem levar em consideração autenticação</em> - vamos primeiro criar uma model.
+Para nossa API ficar mais organizada criaremos uma pasta <strong>models</strong> dentro do diretório <em>src</em> e os arquivos: <strong>example.model.ts</strong> e <strong>index.ts</strong>:</p>
+<pre><code>nest_api/
+├── node_modules/
+├── src/
+  ├── config/
+  ├── models/
+      ├── example.model.ts &lt;---
+      └── index.ts &lt;---
+  ├── app.controller.spec.ts
+  ├── app.controller.ts
+  ├── app.module.ts
+  ├── app.service.ts
+  └── main.ts
+├── test/
+├── .eslintrc.js
+├── .gitignore
+├── .prettierrc
+├── dev.env
+├── docker-compose.dev.yml
+├── Dockerfile
+├── nest-cli.json
+├── package.json
+├── README.md
+├── tsconfig.build.json
+├── tsconfig.json
+└── yarn.lock
+</code></pre>
+<p>Uma model é a representação da nossa tabela no banco de dados.
+Vamos criar uma tabela simples para usarmos como exemplo.
+Com apenas três campos:</p>
+<ul>
+<li>Um campo <em>id</em> do tipo <em>number</em>; </li>
+<li>Um campo <em>name</em> do tipo <em>string</em>; </li>
+<li>E um campo <em>age</em> do tipo <em>number</em>.</li>
+</ul>
+<p>{% highlight typescript %}
+// example.model.ts:
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';</p>
+<p>@Entity()
+export class Example {
+ @PrimaryGeneratedColumn()
+ id!: number;</p>
+<p>@Column()
+ name: string;</p>
+<p>@Column()
+ age: number;</p>
+<p>constructor(example: Partial<Example>) {
+   Object.assign(this, example);
+ }
+}</p>
+<p>{% endhighlight %}
+{% highlight typescript %}
+// index.ts:
+export * from './example.model';
+{% endhighlight %}</p>
+<p>Agora para criar o CRUD em si vamos usar o comando:</p>
+<pre><code>nest g resource example
+</code></pre>
+<p>No arquivo <em>create-example.dto</em> dentro da pasta <em>dto</em> no diretório criado:
+{% highlight typescript %}
+// create-example.dto:
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber, IsString, MaxLength } from 'class-validator';</p>
+<p>export class CreateExampleDto {
+ @ApiProperty()
+ @IsNumber()
+ id?: number;</p>
+<p>@ApiProperty()
+ @IsString()
+ @IsNotEmpty()
+ @MaxLength(200)
+ name: string;</p>
+<p>@ApiProperty()
+ @IsNumber()
+ @IsNotEmpty()
+ age: number;
+}
+{% endhighlight %}
+E no arquivo <em>example.service.ts</em>:
+{% highlight typescript %}
+// example.service.ts:
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Example } from 'src/models';
+import { Repository } from 'typeorm';
+import { CreateExampleDto } from './dto/create-example.dto';
+import { UpdateExampleDto } from './dto/update-example.dto';</p>
+<p>@Injectable()
+export class ExampleService {
+ constructor(
+   @InjectRepository(Example)
+   private readonly exampleRepository: Repository<Example>,
+ ) {}</p>
+<p>create(createExampleDto: CreateExampleDto) {
+   return this.exampleRepository.save(createExampleDto);
+ }</p>
+<p>findAll() {
+   return this.exampleRepository.find();
+ }</p>
+<p>findOne(id: number) {
+   return this.exampleRepository.findOneBy({ id: id });
+ }</p>
+<p>update(id: number, updateExampleDto: UpdateExampleDto) {
+   return this.exampleRepository.update(id, updateExampleDto);
+ }</p>
+<p>remove(id: number) {
+   return this.exampleRepository.delete(id);
+ }
+}
+{% endhighlight %}</p>
+<p>Se tudo funcionou como o esperado você vai poder visualizar a tabela <em>example</em> no banco de dados através do pgAdmin.</p>
+<h1 id="swagger">Swagger</h1>
+<p>Com o Swagger já instalado, no arquivo <em>main.ts</em>:</p>
+<p>{% highlight typescript %}
+// main.ts:
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AppModule } from './app.module';</p>
+<p>async function bootstrap() {
+ const app = await NestFactory.create(AppModule);</p>
+<p>const config = new DocumentBuilder()
+   .setTitle('Example')
+   .setDescription('The Example API description')
+   .setVersion('1.0')
+   .addTag('Example Api')
+   .build();</p>
+<p>const document = SwaggerModule.createDocument(app, config);
+ SwaggerModule.setup('api', app, document);</p>
+<p>await app.listen(3000);
+}
+bootstrap();
+{% endhighlight %}</p>
+<p>Pronto. Se tudo deu certo você já vai poder visualizar e testar sua API através do Swagger no endereço <em>http://localhost:3000/api</em>.</p>
+<p><a href="https://github.com/leozamboni/docker-nest-boilerplate">Código completo do tutorial</a>.</p>

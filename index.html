@@ -5,9 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
+
   <style>
     * {
       font-family: monospace;
+    }
+
+    .all-stuff {
+      font-size: 0.6em;
     }
 
     header .title {
@@ -61,6 +66,27 @@
       color: lightgreen;
       margin-top: 0px;
     }
+
+    .box {
+      padding: 6px;
+      margin: 6px;
+      border: solid 1px silver;
+      border-radius: 16px;
+    }
+
+    main .projects ul {
+      list-style: none;
+    }
+    
+    main .projects ul li {
+      display: inline-block;
+      text-align: center;
+    }
+
+    .box img {
+      height: 200px;
+      width: 200px;
+    }
   </style>
 </head>
 
@@ -73,20 +99,45 @@
       <br>
       <span class="lambda-4">λ</span>
     </div>
-    <h1 class="title"><a href="">leozamboni.dev</a></h1>
+    <h1 class="title"><a href="">Leonardo</a></h1>
     <br>
-    <p>Computer things enthusiast.</p>
+    <p>Computer enthusiast.</p>
     <br>
     <hr>
   </header>
   <main>
-    <h2>Last posts:</h2>
-    <ul>
-      <li>
-        <a href="">Stranger Tags: HTML tags you maybe missed</a>
-      </li>
-    </ul>
+    <div class="box projects">
+      <h2>Recent Projects <span class="all-stuff"><a href="">all projects</a></span></h2>
+      <ul id="projects"></ul>
+      <!-- <ul>
+        <li>
+          <a href="">
+            <img src="TempleOS_logo.png" alt="">
+            <p>HolyC Interpreter</p>
+          </a>
+        </li>
+        <li>
+          <a href="">
+            <img src="TempleOS_logo.png" alt="">
+            <p>HolyC Interpreter</p>
+          </a>
+        </li>
+      </ul> -->
+    </div>
+    <div class="box">
+      <h2>Last posts <span class="all-stuff"><a href="">all posts</a></span></h2>
+      <ul id="posts"></ul>
+      <!-- <ul>
+        <li>
+          <a href="">Stranger Tags: HTML tags you maybe missed</a>
+        </li>
+      </ul> -->
+    </div>
+    <hr>
   </main>
+  <footer>
+
+  </footer>
 </body>
 
 </html>

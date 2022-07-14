@@ -12,6 +12,8 @@
     }
   },
   "posts": { 
-    "path": "posts/"
+    "path": "./posts/",
+    "output": "./site/posts/",
+    "style": "./src/template/css/posts.css"
   }
 }

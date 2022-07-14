@@ -9,7 +9,7 @@ export const readFile = (path) => {
   }
 }
 
-export const writeFile = (path) => {
+export const writeFile = (path, content) => {
   try {
     fs.writeFileSync(path, content);
   } catch (err) {
