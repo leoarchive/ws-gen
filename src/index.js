@@ -7,6 +7,8 @@ import { renderPosts } from "./app/posts/index.js";
 import { renderTemplate } from "./app/template/index.js";
 import { writeFile } from "./utils/filesystem.js";
 
+const genreadme = () => writeFile("./README", `page generated ${new Date().toLocaleDateString("pt-BR")} using https://github.com/leozamboni/ws-gen`)
+
 const wsgen = () => {
   let page;
   if (page = process.argv.filter(e => e.substring(0, 7) === "--page=").join("")) {
@@ -22,6 +24,7 @@ const wsgen = () => {
         postsPage();
         break;
     }
+    genreadme();
     return;
   }
 
@@ -30,6 +33,7 @@ const wsgen = () => {
     renderPages();
     renderTemplate();
     renderAssets();
+    genreadme();
     return;
   }
 
@@ -49,6 +53,6 @@ const wsgen = () => {
     renderAssets();
   }
 
-  writeFile("./README", `page generated ${new Date().toLocaleDateString("pt-BR")} using https://github.com/leozamboni/ws-gen`)
+  genreadme();
 }
 wsgen();
