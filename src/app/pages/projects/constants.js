@@ -1,3 +1,4 @@
+import * as config from '../../../../wsgen.json' assert {type: "json"};
 import { footer, footerStyle } from "../../../components/footer/index.js"
 import { projects } from "../../../components/projects/index.js"
 
@@ -7,7 +8,7 @@ export const head = `
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Document</title>
+<title>${config.default.title}</title>
 <link rel="stylesheet" href="template/styles/global.css">
 <link rel="stylesheet" href="template/styles/all-projects.css">
 <style>${footerStyle}</style>

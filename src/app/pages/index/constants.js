@@ -44,7 +44,7 @@ export const head = `
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Document</title>
+<title>${config.default.title}</title>
 <link rel="stylesheet" href="template/styles/global.css">
 <link rel="stylesheet" href="template/styles/${config.default.index.template}">
 <style>
