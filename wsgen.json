@@ -1,19 +1,14 @@
 {
-  "index": { 
-    "file-name": "index",
-    "head": {
-      "title": "index"
-    },
-    "header": {
-      "title": "leozamboni.dev"
-    },
-    "footer": {
-      "copyright": "2022 (c) leonardo z. n."
-    }
+  "outputdir": "./site/",
+  "assetsdir": "./assets/",
+  "template": {
+    "path": "./src/template/css/"
+  },
+  "index": {
+    "template": "index.css"
   },
   "posts": { 
     "path": "./posts/",
-    "output": "./site/posts/",
-    "style": "./src/template/css/posts.css"
+    "template": "posts.css"
   }
 }
