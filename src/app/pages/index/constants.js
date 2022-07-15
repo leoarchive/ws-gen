@@ -4,11 +4,16 @@ import * as util from 'util'
 import { lambdacircle, lambdacirclestyle } from "../../../components/lambda-circle/index.js"
 import { footer, footerStyle } from "../../../components/footer/index.js"
 import { readFile } from "../../../utils/filesystem.js";
-import { projects, projectsStyle } from '../../../components/projects/index.js';
+import { projects, projectsConfig, projectsStyle } from '../../../components/projects/index.js';
 
-export const listPosts = async (items) => {
+const readdir = util.promisify(fs.readdir)
+const postsLength = async () => {
+  const filenames = await readdir(dirname);
+  return filenames.length;
+}
+
+export const listPosts = async () => {
   const dirname = config.default.posts.path;
-  const readdir = util.promisify(fs.readdir)
   const filenames = await readdir(dirname);
 
   let files = filenames.map(e => {
@@ -25,7 +30,7 @@ export const listPosts = async (items) => {
     return dateA - dateB
   }).reverse();
 
-  return files.slice(0, items).map(e => `
+  return files.map(e => `
 <li>
 <p>
 <a href="${e.path}">
@@ -35,7 +40,7 @@ ${e.title}
 ${new Date(e.date).toLocaleDateString("pt-BR")}
 </span>
 </p>
-</li>`).join('');
+</li>`);
 }
 
 export const head = `
@@ -67,15 +72,15 @@ ${lambdacircle}
 </header>
 <main>
 <div class="box">
-<h2>Recent Projects <span class="all-stuff"><a href="./projects.html">all projects</a></span></h2>
+<h2>Recent Projects <span class="all-stuff"><a href="./projects.html">all projects (${projectsConfig.length})</a></span></h2>
 <!-- list of recent projects -->
 ${projects(5)}
 </div>
 <div class="box">
-<h2>Last Posts <span class="all-stuff"><a href="./posts.html">all posts</a></span></h2>
+<h2>Last Posts <span class="all-stuff"><a href="./posts.html">all posts (${await postsLength()})</a></span></h2>
 <!-- list of last posts -->
 <ul>
-${await listPosts(5)}
+${await listPosts().slice(0,5).join('')}
 </ul> 
 
 </div>
