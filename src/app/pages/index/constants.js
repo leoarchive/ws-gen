@@ -7,30 +7,31 @@ import { readFile } from "../../../utils/filesystem.js";
 import { projects, projectsConfig, projectsStyle } from '../../../components/projects/index.js';
 
 const readdir = util.promisify(fs.readdir)
+const dirname = config.default.posts.path;
+
 const postsLength = async () => {
   const filenames = await readdir(dirname);
   return filenames.length;
 }
 
-export const listPosts = async () => {
-  const dirname = config.default.posts.path;
+export const listPosts = async (items) => {
   const filenames = await readdir(dirname);
 
   let files = filenames.map(e => {
     const title = readFile(dirname + e);
     return {
-      path: dirname + e.substring(0, e.length - 2) + "html",
+      path: "posts/" + e.substring(0, e.length - 2) + "html",
       title: title.split('\n')[0].substring(2),
       date: e.substring(0, 8)
     }
   })
 
-  files = files.sort((a, b) => {
+  files = files.slice(0,5).sort((a, b) => {
     const dateA = new Date(a.date), dateB = new Date(b.date)
     return dateA - dateB
   }).reverse();
 
-  return files.map(e => `
+  return files.slice(0,5).map(e => `
 <li>
 <p>
 <a href="${e.path}">
@@ -40,7 +41,7 @@ ${e.title}
 ${new Date(e.date).toLocaleDateString("pt-BR")}
 </span>
 </p>
-</li>`);
+</li>`).join('');
 }
 
 export const head = `
@@ -80,7 +81,7 @@ ${projects(5)}
 <h2>Last Posts <span class="all-stuff"><a href="./posts.html">all posts (${await postsLength()})</a></span></h2>
 <!-- list of last posts -->
 <ul>
-${await listPosts().slice(0,5).join('')}
+${await listPosts(5)}
 </ul> 
 
 </div>
